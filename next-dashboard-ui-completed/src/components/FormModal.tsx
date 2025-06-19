@@ -9,18 +9,21 @@ import { useState } from "react";
 // import TeacherForm from "./forms/TeacherForm";
 // import StudentForm from "./forms/StudentForm";
 
-const TeacherForm = dynamic(() => import("./forms/TeacherForm"), {
+
+const DatasetForm = dynamic(() => import("./forms/DatasetForm"), {
   loading: () => <h1>Loading...</h1>,
 });
-const StudentForm = dynamic(() => import("./forms/StudentForm"), {
+const CategoryForm = dynamic(() => import("./forms/CategoryForm"), {
   loading: () => <h1>Loading...</h1>,
 });
+
+
 
 const forms: {
   [key: string]: (type: "create" | "update", data?: any) => JSX.Element;
 } = {
-  teacher: (type, data) => <TeacherForm type={type} data={data} />,
-  student: (type, data) => <StudentForm type={type} data={data} />
+  dataset: (type, data) => <DatasetForm type={type} data={data} />, 
+  category: (type, data) => <CategoryForm type={type} data={data} />, 
 };
 
 const FormModal = ({
@@ -30,18 +33,9 @@ const FormModal = ({
   id,
 }: {
   table:
-    | "teacher"
-    | "student"
-    | "parent"
-    | "subject"
-    | "class"
-    | "lesson"
-    | "exam"
-    | "assignment"
-    | "result"
-    | "attendance"
-    | "event"
-    | "announcement";
+    | "dataset"
+    | "category"
+    | "datafile";
   type: "create" | "update" | "delete";
   data?: any;
   id?: number;

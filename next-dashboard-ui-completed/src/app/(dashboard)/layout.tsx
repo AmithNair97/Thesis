@@ -13,17 +13,21 @@ export default function DashboardLayout({
       {/* LEFT */}
       <div className="w-[14%] md:w-[8%] lg:w-[16%] xl:w-[14%] p-4">
         <Link
-          href="/"
-          className="flex items-center justify-center lg:justify-start gap-2"
+          href="/admin"
+          className="flex items-center justify-center lg:justify-start gap-2 cursor-pointer"
         >
-          <Image src="/logo.png" alt="logo" width={32} height={32} />
-          <span className="hidden lg:block font-bold">SchooLama</span>
+          <div className="flex flex-col items-center lg:flex-row lg:items-center gap-2">
+            <Image src="/redpitaya.png" alt="logo" width={72} height={72} />
+            <span className="hidden lg:block font-bold text-xl lg:text-2xl tracking-wide">
+              Database
+            </span>
+          </div>
         </Link>
         <Menu />
       </div>
+
       {/* RIGHT */}
       <div className="w-[86%] md:w-[92%] lg:w-[84%] xl:w-[86%] bg-[#F7F8FA] overflow-scroll flex flex-col">
-        <Navbar />
         {children}
       </div>
     </div>

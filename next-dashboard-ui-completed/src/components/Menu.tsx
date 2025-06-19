@@ -8,22 +8,28 @@ const menuItems = [
     items: [
       {
         icon: "/home.png",
-        label: "Home",
-        href: "/",
-        visible: ["admin", "teacher", "student", "parent"],
+        label: "Home", 
+        href: "/admin",
+        visible: ["admin"],
       },
       {
-        icon: "/exam.png",
+        icon: "/dataset.png",
         label: "Datasets",
-        href: "/list/teachers",
-        visible: ["admin", "teacher"],
+        href: "/list/datasets",
+        visible: ["admin"],
       },
       {
-        icon: "/calendar.png",
-        label: "Add Data",
-        href: "/list/students",
-        visible: ["admin", "teacher"],
+        icon: "/create.png",
+        label: "Upload Data",
+        href: "/list/datafiles/upload",
+        visible: ["admin"],
       },
+      {
+        icon: "/filter.png",
+        label: "Data from date",
+        href: "/list/datalist",
+        visible: ["admin"],
+      }
     ],
   },
   {
@@ -33,12 +39,6 @@ const menuItems = [
         icon: "/profile.png",
         label: "Profile",
         href: "/profile",
-        visible: ["admin", "teacher", "student", "parent"],
-      },
-      {
-        icon: "/setting.png",
-        label: "Settings",
-        href: "/settings",
         visible: ["admin", "teacher", "student", "parent"],
       },
       {

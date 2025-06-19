@@ -1,12 +1,21 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
+import axios from "axios";
+
+axios.defaults.withCredentials = true;
+
+// 1. Import the DatasetProvider
+import { DatasetProvider } from "@/context/DatasetContext";
 
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Lama Dev School Management Dashboard",
-  description: "Next.js School Management System",
+  title: "Red Pitaya Database",
+  description: "Data Management System",
+  icons: {
+    icon: "/RP.png",
+  },
 };
 
 export default function RootLayout({
@@ -16,7 +25,15 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={inter.className}>{children}</body>
+      <head>
+        <link rel="icon" href="/RP.png" />
+      </head>
+      <body className={inter.className}>
+        {/* 2. Wrap all content with the DatasetProvider */}
+        <DatasetProvider>
+          {children}
+        </DatasetProvider>
+      </body>
     </html>
   );
 }
