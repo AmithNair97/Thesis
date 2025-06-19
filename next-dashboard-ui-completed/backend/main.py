@@ -1,13 +1,12 @@
-from fastapi import FastAPI, Request, HTTPException, Body, UploadFile, File, Form
+from fastapi import FastAPI, Request, HTTPException, Body, UploadFile, File, Form, Query, Response
 from motor.motor_asyncio import AsyncIOMotorClient
 from dotenv import load_dotenv
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, RedirectResponse
 import boto3
 import os
 from bson import ObjectId
 from datetime import datetime, timedelta, timezone
-from fastapi import APIRouter, Response, Depends
 from pydantic import BaseModel
 
 load_dotenv()
@@ -26,7 +25,7 @@ app = FastAPI()
 # Allow frontend (like React)
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000"],  # Use ["http://localhost:3000"] for dev
+    allow_origins=["http://localhost:3000"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -92,7 +91,7 @@ async def register_user(user: dict = Body(...)):
     user_data = {
         "name": user["name"],
         "email": user["email"],
-        "password": user["password"],  # ⚠️ Later: hash this!
+        "password": user["password"],
         "role": "Student"
     }
     result = await users_collection.insert_one(user_data)
@@ -103,17 +102,13 @@ class LoginRequest(BaseModel):
     email: str
     password: str
 
-
 @app.post("/login")
 async def login_user(user: LoginRequest, response: Response):
-    # ✅ Look up user by email in MongoDB
     user_in_db = await users_collection.find_one({"email": user.email})
-    
-    # ✅ Validate password (plaintext check for now — should be hashed!)
+
     if not user_in_db or user_in_db["password"] != user.password:
         raise HTTPException(status_code=401, detail="Invalid credentials")
 
-    # ✅ Set session cookie with user's email (for simplicity)
     response.set_cookie(
         key="session",
         value=user.email,
@@ -140,15 +135,13 @@ async def get_current_user(request: Request):
     if not user:
         raise HTTPException(status_code=401, detail="User not found")
 
-    # Remove sensitive fields like password
-    user["_id"] = str(user["_id"])  # Convert ObjectId to string
-    user.pop("password", None)      # Remove password from response
+    user["_id"] = str(user["_id"])
+    user.pop("password", None)
 
     return user
 
-
 @app.post("/logout")
-async def logout_user(response: Response):  # <-- add response here
+async def logout_user(response: Response):
     response.delete_cookie("session")
     return {"message": "Logged out successfully"}
 
@@ -229,10 +222,6 @@ async def get_file_count_per_category(dataset_name: str):
     result = await datafiles_collection.aggregate(pipeline).to_list(length=None)
     return result
 
-from fastapi import Query
-from datetime import datetime
-from fastapi import HTTPException
-
 @app.get("/datafiles/by-date-range")
 async def get_datafiles_by_date_range(
     from_date: str = Query(..., alias="from"),
@@ -247,12 +236,11 @@ async def get_datafiles_by_date_range(
 
     query = {}
     if dataset:
-        query["dataset"] = { "$regex": f"^{dataset}$", "$options": "i" }
+        query["dataset"] = {"$regex": f"^{dataset}$", "$options": "i"}
 
     cursor = datafiles_collection.find(query)
     raw_results = [serialize_document(doc) async for doc in cursor]
 
-    # ✅ Filter by date only (compare date part)
     results = []
     for doc in raw_results:
         try:
@@ -264,3 +252,17 @@ async def get_datafiles_by_date_range(
 
     print(f"✅ Final matched count: {len(results)}")
     return results
+
+@app.get("/download/{filename}")
+async def download_file(filename: str, dataset: str = Query(...), category: str = Query(...)):
+    s3_key = f"{dataset}/{category}/{filename}"
+    try:
+        url = s3.generate_presigned_url(
+            'get_object',
+            Params={'Bucket': BUCKET_NAME, 'Key': s3_key},
+            ExpiresIn=60
+        )
+        return RedirectResponse(url)
+    except Exception as e:
+        print(f"❌ Download Error: {e}")
+        raise HTTPException(status_code=500, detail="Download failed")
